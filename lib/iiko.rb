@@ -14,12 +14,14 @@ module Iiko
     self.base_url                 = 'https://iiko.biz:9900/api/0'
     self.get_token_url            = '/auth/access_token'
 
-    attr_reader :userid, :usersecret
+    attr_reader :userid, :usersecret, :current_organization
 
     def initialize userid, usersecret
       # Required args
       @userid = userid
       @usersecret = usersecret
+      list = self.get_organization_list
+      @current_organization = list[0]
     end
 
     def get_token
@@ -45,13 +47,13 @@ module Iiko
           org_item.merge!(name: org['name'], id: org['id'])
           org_list << org_item
         end
-        org_list
       else
         raise response.response
       end
     end
 
-    def get_nomenclature(org_id)
+    def get_nomenclature
+      org_id = @current_organization['id']
       url = "#{self.class.base_url}/nomenclature/#{org_id}"
 
       response = HTTParty.send('get', url, query: { access_token: self.get_token })
@@ -61,6 +63,43 @@ module Iiko
       else
         raise response.response
       end
+    end
+
+    def get_payment_types
+      org_id = @current_organization['id']
+
+      url = "#{self.class.base_url}/rmsSettings/getPaymentTypes"
+
+      response = HTTParty.send('get', url, query: { access_token: self.get_token, organization: org_id })
+
+      if response.success?
+        response.parsed_response
+      else
+        raise response.response
+      end
+    end
+
+    def new_order
+      { date: Time.now.utc }
+    end
+
+    def add_item(order, item)
+      items ||= []
+      items << item
+      order[:items] = items
+    end
+
+
+    def add_order(order_request)
+      url = "#{self.class.base_url}/orders/add"
+
+      response = HTTParty.send('post', url, query: { access_token: self.get_token, order_request: order_request }, :debug_output => $stdout)
+    end
+
+    private
+
+    def do_request
+      # HTTParty и обработка
     end
 
   end
