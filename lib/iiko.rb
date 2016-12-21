@@ -93,7 +93,14 @@ module Iiko
     def add_order(order_request)
       url = "#{self.class.base_url}/orders/add"
 
-      response = HTTParty.send('post', url, query: { access_token: self.get_token, order_request: order_request }, :debug_output => $stdout)
+      response = HTTParty.send(
+          'post',
+          url,
+          query: { access_token: self.get_token },
+          :body => order_request.to_json,
+          :debug_output => $stdout,
+          headers: { 'Content-Type' => 'application/json; charset=utf-8', }
+      )
     end
 
     private
