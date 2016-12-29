@@ -9,6 +9,15 @@ module Iiko
       @raw_order.merge!(args)
     end
 
+    def select_item(client, count_index, amount)
+      nomenclature = client.get_nomenclature
+
+      { id: nomenclature['products'][count_index]['id'],
+        name: nomenclature['products'][count_index]['name'],
+        amount: amount,
+        price: nomenclature['products'][count_index]['price'] }
+    end
+
     def add_item(item)
       items = raw_order[:items] || []
       items << item
@@ -22,8 +31,8 @@ module Iiko
     end
 
     def make_request_order(client, customer)
-      raw_order[:phone] = customer[:phone]
-      { organization: client.current_organization[:id], customer: customer, order: raw_order }
+      raw_order[:phone] = customer.raw_customer[:phone]
+      { organization: client.current_organization[:id], customer: customer.raw_customer, order: raw_order }
     end
   end
 end
