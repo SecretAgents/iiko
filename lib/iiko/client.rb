@@ -26,7 +26,8 @@ module Iiko
       # TODO кэш не работает
       Rails.cache.fetch("iiko/auth_token/#{userid}", expires_in: 14.minute) do
         url = "#{self.class.base_url}/auth/access_token"
-        do_request('get', url, query: { user_id: self.userid, user_secret: self.usersecret })
+        token = do_request('get', url, query: { user_id: self.userid, user_secret: self.usersecret })
+        token
       end
     end
 
@@ -57,20 +58,6 @@ module Iiko
       do_request('get', url, query: { access_token: self.get_token, organization: self.current_organization[:id] })
     end
 
-    # example optional args:
-    #   isSelfService: true - self-pickup delivery parameter
-    def create_order(args={})
-      Order.new(args)
-    end
-
-    def add_order(order)
-      url = "#{self.class.base_url}/orders/add"
-
-      do_request('post', url, query: { access_token: self.get_token}, :body => order.to_json)
-    end
-
-    private
-
     def do_request(method, url, query = {})
       query.merge!(debug_output: $stdout) if @debug_mode
       if !query.empty? && method == 'post'
@@ -85,5 +72,6 @@ module Iiko
         raise StandardError, response.message
       end
     end
+
   end
 end

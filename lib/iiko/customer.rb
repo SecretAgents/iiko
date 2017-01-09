@@ -1,5 +1,3 @@
-require 'securerandom'
-
 module Iiko
   class Customer
     attr_reader :raw_customer
@@ -11,5 +9,6 @@ module Iiko
       # optional args
       @raw_customer[:id] ||= SecureRandom.uuid
     end
+
   end
 end

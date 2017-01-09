@@ -1,9 +1,9 @@
-require 'securerandom'
-
 module Iiko
   class Order
     attr_accessor :raw_order
 
+    # example optional args:
+    #   isSelfService: true - self-pickup delivery parameter
     def initialize(args={})
       @raw_order = { id: SecureRandom.uuid, date: Time.now.utc.strftime('%Y-%m-%d %H:%M:%S'), full_sum: 0 }
       @raw_order.merge!(args)
@@ -26,13 +26,37 @@ module Iiko
     end
 
     # format: {city: 'City', street: 'Street', home: 'x', apartment: 'y'}
+    # TODO добавление улицы через streetId
     def add_address(address={})
       raw_order[:address] = address
+    end
+
+    # required args:
+    #   "isProcessedExternally" => boolean
+    # optional args:
+    #   "isPreliminary" => boolean
+    #   "isExternal" => boolean
+    #   "additionalData" => string
+    def add_payment_type(client, count_index, args={})
+      pt = client.get_payment_types
+
+      payments = []
+      options = { "paymentType" => pt["paymentTypes"][count_index], "sum" => raw_order[:full_sum] }
+      options.merge!(args) if args
+      payments << options
+      raw_order[:paymentItems] = payments
     end
 
     def make_request_order(client, customer)
       raw_order[:phone] = customer.raw_customer[:phone]
       { organization: client.current_organization[:id], customer: customer.raw_customer, order: raw_order }
     end
+
+    def add_order(client, order)
+      url = "#{Iiko::ClientAPI.base_url}/orders/add"
+
+      client.do_request('post', url, query: { access_token: client.get_token }, :body => order.to_json)
+    end
+
   end
 end
