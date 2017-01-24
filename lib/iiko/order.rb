@@ -9,6 +9,8 @@ module Iiko
       @raw_order.merge!(args)
     end
 
+    # Выбор продукта из меню организации
+    # обязательные параметры: СlientAPI, индекс (номер по порядку) выбираемого пункта в меню, количество единиц.
     def select_item(client, count_index, amount)
       nomenclature = client.get_nomenclature
 
@@ -18,6 +20,7 @@ module Iiko
         price: nomenclature['products'][count_index]['price'] }
     end
 
+    # Добавление выбранного продукта к заказу
     def add_item(item)
       items = raw_order[:items] || []
       items << item

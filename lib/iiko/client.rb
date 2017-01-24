@@ -22,16 +22,17 @@ module Iiko
       @current_organization = args[:current_organization] || self.get_organization_list.first
     end
 
+    # Получение токена для авторизации
     def get_token
-      # TODO кэш не работает
-      Rails.cache.fetch("iiko/auth_token/#{userid}", expires_in: 14.minute) do
+      Rails.cache.fetch("iiko/auth_token/#{userid}", expires_in: 14.minutes) do
         url = "#{self.class.base_url}/auth/access_token"
         token = do_request('get', url, query: { user_id: self.userid, user_secret: self.usersecret })
         token
       end
     end
 
-    # return array [{:name=>"Org Name", :id=>"fsjvfhrt-ffgd-dgddfgd-dfgdfg-fglfkldfkg"}]
+    # Список организаций
+    # return Array [{:name=>"Org Name", :id=>"fsjvfhrt-ffgd-dgddfgd-dfgdfg-fglfkldfkg"}]
     def get_organization_list
       url = "#{self.class.base_url}/organization/list"
       org_list = []
@@ -46,14 +47,23 @@ module Iiko
       org_list
     end
 
+    # Получение номенклатуры (меню) организации
     def get_nomenclature
       url = "#{self.class.base_url}/nomenclature/#{self.current_organization[:id]}"
 
       do_request('get', url, query: { access_token: self.get_token })
     end
 
+    # Получение типов оплат организации
     def get_payment_types
       url = "#{self.class.base_url}/rmsSettings/getPaymentTypes"
+
+      do_request('get', url, query: { access_token: self.get_token, organization: self.current_organization[:id] })
+    end
+
+    # Получение списка доставочных ресторанов, подключённых к данному ресторану
+    def get_delivery_terminals
+      url = "#{self.class.base_url}/deliverySettings/getDeliveryTerminals"
 
       do_request('get', url, query: { access_token: self.get_token, organization: self.current_organization[:id] })
     end
