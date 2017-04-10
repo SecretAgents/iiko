@@ -11,7 +11,8 @@ module Iiko
     self.display_name             = 'Iiko'
     self.base_url                 = 'https://iiko.biz:9900/api/0'
 
-    attr_reader :userid, :usersecret, :current_organization
+    attr_reader :userid, :usersecret
+    attr_accessor :current_organization
 
     def initialize(userid, usersecret, args = {})
       # required args
