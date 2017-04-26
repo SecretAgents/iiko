@@ -42,7 +42,7 @@ module Iiko
 
       result.each do |org|
         org_item = {}
-        org_item.merge!(name: org['name'], id: org['id'])
+        org_item.merge!(name: org['name'], id: org['id'], address: org['address'], address2: org['contact']['location'])
         org_list << org_item
       end
       org_list
@@ -53,6 +53,20 @@ module Iiko
       url = "#{self.class.base_url}/nomenclature/#{self.current_organization[:id]}"
 
       do_request('get', url, query: { access_token: self.get_token })
+    end
+
+    # Получение стоп-листов по организации
+    def get_stop_lists
+      url = "#{self.class.base_url}/stopLists/getDeliveryStopList"
+
+      do_request('get', url, query: { access_token: self.get_token, organization: self.current_organization[:id] })
+    end
+
+    # Получение списка терминалов доставки по организации
+    def get_terminals
+      url = "#{self.class.base_url}/deliverySettings/getDeliveryTerminals"
+
+      do_request('get', url, query: { access_token: self.get_token, organization: self.current_organization[:id] })
     end
 
     # Получение типов оплат организации

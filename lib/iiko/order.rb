@@ -5,7 +5,8 @@ module Iiko
     # example optional args:
     #   isSelfService: true - self-pickup delivery parameter
     def initialize(args={})
-      @raw_order = { id: SecureRandom.uuid, date: Time.now.utc.strftime('%Y-%m-%d %H:%M:%S'), full_sum: 0 }
+      args[:date] ||= Time.now.utc.strftime('%Y-%m-%d %H:%M:%S')
+      @raw_order = { id: SecureRandom.uuid, full_sum: 0 }
       @raw_order.merge!(args)
     end
 
@@ -50,9 +51,12 @@ module Iiko
       raw_order[:paymentItems] = payments
     end
 
-    def make_request_order(client, customer)
+    # optional args:
+    #   deliveryTerminalId: uuid delivery terminal
+    def make_request_order(client, customer, args={})
       raw_order[:phone] = customer.raw_customer[:phone]
-      { organization: client.current_organization[:id], customer: customer.raw_customer, order: raw_order }
+      options = { organization: client.current_organization[:id], customer: customer.raw_customer, order: raw_order }
+      options.merge!(args) if args
     end
 
     def add_order(client, order)
