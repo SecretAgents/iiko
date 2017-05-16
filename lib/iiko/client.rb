@@ -20,6 +20,7 @@ module Iiko
       @usersecret = usersecret
       # optional args
       @debug_mode = args[:debug_mode]
+      @debug_logger = args[:debug_logger]
       @current_organization = args[:current_organization] || self.get_organization_list.first
     end
 
@@ -84,7 +85,7 @@ module Iiko
     end
 
     def do_request(method, url, query = {})
-      query.merge!(debug_output: Rails.logger) if @debug_mode
+      query.merge!(debug_output: @debug_logger) if @debug_mode
       if !query.empty? && method == 'post'
         query[:headers] = { 'Content-Type' => 'application/json; charset=utf-8' }
       end
@@ -94,7 +95,8 @@ module Iiko
       if response.success?
         response.parsed_response
       else
-        raise StandardError, response.message
+        message = "Code error: #{response.parsed_response['code']}, message error: #{response.parsed_response['description']}"
+        raise StandardError, message
       end
     end
 
