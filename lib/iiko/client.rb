@@ -84,7 +84,7 @@ module Iiko
     end
 
     def do_request(method, url, query = {})
-      query.merge!(debug_output: $stdout) if @debug_mode
+      query.merge!(debug_output: $stderr) if @debug_mode
       if !query.empty? && method == 'post'
         query[:headers] = { 'Content-Type' => 'application/json; charset=utf-8' }
       end
